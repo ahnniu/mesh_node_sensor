@@ -33,11 +33,17 @@ struct sensor_desciptor {
 	u8_t update_interval;
 } __packed;
 
-struct sensor {
+struct sensor_prop {
 	struct mesh_device_property *prop;
-	void *dev;
 	struct sensor_desciptor desc;
 };
+
+struct sensor {
+	struct sensor_prop **prop;
+	int props_count;
+	void *dev;
+};
+
 struct sensor_state {
 	struct sensor **sensor;
 	int sensors_count;
