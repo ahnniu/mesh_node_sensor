@@ -39,8 +39,8 @@ struct sensor_prop {
 };
 
 struct sensor {
-	struct sensor_prop **prop;
-	int props_count;
+	struct sensor_prop **channel;
+	int channels_count;
 	void *dev;
 };
 

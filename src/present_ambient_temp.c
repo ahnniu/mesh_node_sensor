@@ -16,12 +16,12 @@ static struct sensor_prop pat_sensor_prop = {
 	.prop = &present_ambient_temperature,
 };
 
-static struct sensor_prop *props[] = {
+static struct sensor_prop *channels[] = {
 	&pat_sensor_prop
 };
 static struct sensor pat_sensor = {
-	.prop = props,
-	.props_count = ARRAY_SIZE(props),
+	.channel = channels,
+	.channels_count = ARRAY_SIZE(channels),
 	.dev = &temp_sensor_dev
 };
 
