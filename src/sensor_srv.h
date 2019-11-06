@@ -2,6 +2,9 @@
 #define ZEPHYR_INCLUDE_APP_SENSOR_SRV_H_
 
 #include <zephyr.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/mesh.h>
+
 #include "dev_prop.h"
 
 enum sensor_data_format {
@@ -21,14 +24,31 @@ struct sensor_tlv_b {
 	u16_t prop_id:11;
 } __packed;
 
+struct sensor_desciptor {
+	u16_t prop_id;
+	u16_t positive_tolerance:12;
+	u16_t negative_tolerance:12;
+	u8_t sampling_function;
+	u8_t measurement_period;
+	u8_t update_interval;
+} __packed;
+
+struct sensor {
+	struct mesh_device_property *prop;
+	void *dev;
+	struct sensor_desciptor desc;
+};
 struct sensor_state {
-	struct mesh_device_property **prop;
-	int prop_count;
+	struct sensor **sensor;
+	int sensors_count;
 };
 
 extern const struct bt_mesh_model_op sensor_srv_op[];
 extern struct sensor_state sensor_srv_state;
 
-void sensor_srv_init();
+int sensor_srv_register(struct sensor *sens);
+int sensor_srv_init();
+
+int pat_register();
 
 #endif

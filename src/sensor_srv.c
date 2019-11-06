@@ -9,18 +9,10 @@
 #include "mesh.h"
 #include "sensor_srv.h"
 
-MESH_CHARACTER_FIELD_DEFINE(temperature_8, temperature_8, 1);
-MESH_CHARACTER_1_DEFINE(temperature_8, temperature_8);
-MESH_DEVICE_PROPERTY_DEFINE(present_ambient_temperature, temperature_8);
+#define SENSOR_SRV_MAX_SENSOR_COUNT 10
 
-static struct mesh_device_property *sensor_props[] = {
-	&present_ambient_temperature
-};
-
-struct sensor_state sensor_srv_state = {
-	.prop = sensor_props,
-	.prop_count = ARRAY_SIZE(sensor_props)
-};
+static struct sensor *sensors[SENSOR_SRV_MAX_SENSOR_COUNT];
+struct sensor_state sensor_srv_state;
 
 static void sensor_desc_get(struct bt_mesh_model *model,
 			    struct bt_mesh_msg_ctx *ctx,
@@ -58,7 +50,46 @@ const struct bt_mesh_model_op sensor_srv_op[] = {
 	BT_MESH_MODEL_OP_END,
 };
 
-void sensor_srv_init()
+static void sensor_srv_state_init()
 {
+	int i;
 
+	for(i = 0; i < SENSOR_SRV_MAX_SENSOR_COUNT; i++) {
+		sensors[i] = NULL;
+	}
+	sensor_srv_state.sensors_count = 0;
+	sensor_srv_state.sensor = sensors;
+}
+
+int sensor_srv_register(struct sensor *sens)
+{
+	int i = sensor_srv_state.sensors_count;
+
+	if (!sens) {
+		return -EINVAL;
+	}
+
+	if (i < SENSOR_SRV_MAX_SENSOR_COUNT - 1) {
+		sensors[i++] = sens;
+	} else {
+		return -ENOMEM;
+	}
+
+	return 0;
+}
+
+int sensor_srv_init()
+{
+	int err;
+
+	sensor_srv_state_init();
+
+	// Sensor registers
+	err = pat_register();
+
+	if (err < 0) {
+		return err;
+	}
+
+	return 0;
 }
