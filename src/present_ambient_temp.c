@@ -6,7 +6,7 @@ static void temp_on_new_sampling(struct minode_dht_device *dev);
 
 static struct sensor pat_sensor;
 
-MESH_CHARACTER_FIELD_DEFINE(temperature_8, temperature_8, 1);
+MESH_CHARACTER_FIELD_DEFINE(temperature_8, temperature_8, sint8);
 MESH_CHARACTER_1_DEFINE(temperature_8, temperature_8);
 MESH_DEVICE_PROPERTY_DEFINE(present_ambient_temperature, temperature_8);
 

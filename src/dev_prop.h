@@ -2,6 +2,7 @@
 #define ZEPHYR_INCLUDE_APP_DEV_PROP_H_
 
 #include <zephyr.h>
+#include "format_types.h"
 
 struct mesh_characteristic_id {
 	const char *name;
@@ -11,20 +12,21 @@ struct mesh_characteristic_id {
 
 struct mesh_characteristic_type {
 	struct mesh_characteristic_id *id;
-	// const char *format; // sint8
+	const char *format; // sint8
 	// const char *unit;   // org.bluetooth.unit.thermodynamic_temperature.degree_celsius
 	// const char *mini;
 	// const char *max;
 	int d;							// DecimalExponent
 	int b;							// BinaryExponent
 	int m;							// Multipler
-	int size;						// sint8 (1-byte)
 };
 
 struct mesh_characteristic_field {
 	const char *name;
 	struct mesh_characteristic_type *type;
 	u8_t *value;
+	int size;
+	int bits;
 };
 
 struct mesh_characteristic {
@@ -54,25 +56,27 @@ struct mesh_device_property {
 #define MESH_CHARACTER_ID_DECLARE(_name)                          \
 	extern struct mesh_characteristic_id _CONCAT(mci_, _name)
 
-#define MESH_CHARACTER_TYPE_DEFINE(_name, _d, _b, _m, _size)      \
+#define MESH_CHARACTER_TYPE_DEFINE(_name, _format, _d, _b, _m)    \
 	struct mesh_characteristic_type _CONCAT(mct_, _name) = {        \
 		.id = &_CONCAT(mci_,_name),                                   \
 		.d = _d,                                                      \
 		.b = _b,                                                      \
 		.m = _m,                                                      \
-		.size = _size                                                 \
+		.format = STRINGIFY(_format)                                  \
 	}
 
 #define MESH_CHARACTER_TYPE_DECLARE(_name)                        \
 	extern struct mesh_characteristic_type _CONCAT(mct_, _name)
 
-#define MESH_CHARACTER_FIELD_DEFINE(_name, _type_name, _size)     \
-	static __used u8_t mc_field_value_##_name[_size];               \
-	static struct mesh_characteristic_field mc_field_##_name = {    \
-		.name = STRINGIFY(_name),                                     \
-		.type = &_CONCAT(mct_, _type_name),                           \
-		.value = mc_field_value_##_name                               \
-	}                                                               \
+#define MESH_CHARACTER_FIELD_DEFINE(_name, _type_name, _format)           \
+	static __used u8_t mc_field_value_##_name[MESH_FORMAT_SIZE(_format)];   \
+	static struct mesh_characteristic_field mc_field_##_name = {            \
+		.name = STRINGIFY(_name),                                             \
+		.type = &_CONCAT(mct_, _type_name),                                   \
+		.value = mc_field_value_##_name,                                      \
+		.size = MESH_FORMAT_SIZE(_format),                                    \
+		.bits = MESH_FORMAT_BITS(_format)                                     \
+	}
 
 #define MESH_CHARACTER_DEFINE(_name, _fields)                     \
 	static struct mesh_characteristic _name = {                     \

@@ -49,6 +49,9 @@ struct sensor_state {
 	int sensors_count;
 };
 
+#define SENSOR_IS_TLV_A(_prop_id) (_prop_id < 2048)
+#define SENSOR_IS_TLV_B(_prop_id) (!SENSOR_IS_TLV_A(_prop_id))
+
 extern const struct bt_mesh_model_op sensor_srv_op[];
 extern struct sensor_state sensor_srv_state;
 

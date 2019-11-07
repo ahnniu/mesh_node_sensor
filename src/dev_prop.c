@@ -14,4 +14,4 @@ MESH_CHARACTER_ID_DEFINE(
 	0x2B0D
 );
 
-MESH_CHARACTER_TYPE_DEFINE(temperature_8, 0, -1, 1, 1);
+MESH_CHARACTER_TYPE_DEFINE(temperature_8, sint8, 0, -1, 1);
