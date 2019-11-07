@@ -27,7 +27,18 @@ static struct sensor pat_sensor = {
 
 static void temp_on_new_sampling(struct minode_dht_device *dev)
 {
+	struct sensor *sens;
+	struct mesh_characteristic_field *field;
+  struct sensor_value temp_data;
 
+	sens = dev->user_data;
+	field = sens->channel[0]->prop->character->field[0];
+
+  minode_dht_ambient_temp_get(dev, &temp_data);
+	field->value[0] = temp_data.val1;
+
+  printk("DHT11[temperature] attached on %s new sampling - ambient_temp: %d\n",
+      dev->connector, temp_data.val1);
 }
 
 int pat_register()
