@@ -55,6 +55,35 @@ struct sensor_state {
 #define SENSOR_IS_TLV_A(_prop_id) (_prop_id < 2048)
 #define SENSOR_IS_TLV_B(_prop_id) (!SENSOR_IS_TLV_A(_prop_id))
 
+#define SENSOR_TLV_SIZE(_prop_id)                                   \
+		(SENSOR_IS_TLV_A(_prop_id) ?                                    \
+			sizeof(struct sensor_tlv_a) : sizeof(struct sensor_tlv_b))
+
+#define _SENSOR_TLV_AB(_format, _prop_id, _raw_len)                 \
+	{                                                                 \
+		.format = _format,                                              \
+		.length = _raw_len,                                             \
+		.prop_id = _prop_id                                             \
+	}
+
+#define SENSOR_TLV_A(_prop_id, _raw_len)                            \
+	_SENSOR_TLV_AB(SENSOR_DATA_FORMAT_A, _prop_id, _raw_len)
+
+#define SENSOR_TLV_B(_prop_id, _raw_len)                            \
+	_SENSOR_TLV_AB(SENSOR_DATA_FORMAT_B, _prop_id, _raw_len)
+
+
+#define SENSOR_SRV_STATUS_BUF_ADD_TLV(_buf, _prop_id, _raw_len)     \
+	{                                                                 \
+		struct sensor_tlv_a a = SENSOR_TLV_A(_prop_id, _raw_len);       \
+		struct sensor_tlv_b b = SENSOR_TLV_B(_prop_id, _raw_len);       \
+		if (SENSOR_IS_TLV_A(_prop_id)) {                                \
+			net_buf_simple_add_mem(_buf, &a, sizeof(struct sensor_tlv_a));\
+		} else {                                                        \
+			net_buf_simple_add_mem(_buf, &b, sizeof(struct sensor_tlv_b));\
+		}                                                               \
+	}
+
 #define SENSOR_SRV_STATE_DEFINE(_name, _sensors)                    \
 	static struct sensor_state _name = {                              \
 		.sensor = _sensors,                                             \
