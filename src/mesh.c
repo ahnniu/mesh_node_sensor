@@ -7,6 +7,7 @@
 
 #include "mesh.h"
 #include "sensor_srv.h"
+#include "sensors.h"
 #include "board.h"
 
 #define ELEM_0_SENSOR_SRV_MODEL (&root_models[2])

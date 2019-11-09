@@ -101,8 +101,4 @@ int sensor_srv_deinit(struct bt_mesh_model *model);
 
 int sensor_srv_pub_msg_update(struct bt_mesh_model *model);
 
-
-// Sensors delare
-extern struct sensor dht_sensor;
-
 #endif

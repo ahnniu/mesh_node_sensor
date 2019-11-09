@@ -1,9 +1,10 @@
 #include <minode.h>
 
 #include "sensor_srv.h"
+#include "sensors.h"
 
 static void temp_on_new_sampling(struct minode_dht_device *dev);
-static int pat_init(struct sensor *s);
+static int sensor_dht_init(struct sensor *s);
 
 MESH_CHARACTER_FIELD_DEFINE(temperature_8, temperature_8, sint8);
 MESH_CHARACTER_1_DEFINE(temperature_8, temperature_8);
@@ -11,19 +12,19 @@ MESH_DEVICE_PROPERTY_DEFINE(present_ambient_temperature, temperature_8);
 
 MINODE_DHT_DEVICE_DEFINE(temp_sensor_dev, A0, &dht_sensor, temp_on_new_sampling);
 
-static struct sensor_prop pat_sensor_prop = {
+static struct sensor_prop sensor_dht_prop = {
 	.prop = &present_ambient_temperature,
 };
 
 static struct sensor_prop *channels[] = {
-	&pat_sensor_prop
+	&sensor_dht_prop
 };
 struct sensor dht_sensor = {
 	.name = "DHT11",
 	.channel = channels,
 	.channels_count = ARRAY_SIZE(channels),
 	.dev = &temp_sensor_dev,
-	.init = pat_init,
+	.init = sensor_dht_init,
 	.deinit = NULL
 };
 
@@ -43,7 +44,7 @@ static void temp_on_new_sampling(struct minode_dht_device *dev)
       dev->connector, temp_data.val1);
 }
 
-static int pat_init(struct sensor *s)
+static int sensor_dht_init(struct sensor *s)
 {
 	struct minode_dht_device *dev;
 	int err;
@@ -64,12 +65,12 @@ static int pat_init(struct sensor *s)
 
 	minode_dht_start_sampling(&temp_sensor_dev, 1000 * 60);
 
-	pat_sensor_prop.desc.prop_id = pat_sensor_prop.prop->id->uuid;
-	pat_sensor_prop.desc.positive_tolerance = 0;
-	pat_sensor_prop.desc.negative_tolerance = 0;
-	pat_sensor_prop.desc.measurement_period = 88;		// 10s
-	pat_sensor_prop.desc.update_interval = 107;			// 60s
-	pat_sensor_prop.desc.sampling_function = 1;			// Instantaneous
+	sensor_dht_prop.desc.prop_id = sensor_dht_prop.prop->id->uuid;
+	sensor_dht_prop.desc.positive_tolerance = 0;
+	sensor_dht_prop.desc.negative_tolerance = 0;
+	sensor_dht_prop.desc.measurement_period = 88;		// 10s
+	sensor_dht_prop.desc.update_interval = 107;			// 60s
+	sensor_dht_prop.desc.sampling_function = 1;			// Instantaneous
 
 	return 0;
 }
