@@ -9,6 +9,13 @@
 #include "sensor_srv.h"
 #include "board.h"
 
+#define ELEM_0_SENSOR_SRV_MODEL (&root_models[2])
+
+static struct sensor *sensors[] = {
+	&dht_sensor
+};
+
+SENOSR_SRV_MODEL_DATA_DEFINE(elem0_sensor_srv, sensors);
 
 u16_t primary_addr = BT_MESH_ADDR_UNASSIGNED;
 
@@ -36,19 +43,11 @@ static struct bt_mesh_health_srv health_srv = {
 };
 
 BT_MESH_HEALTH_PUB_DEFINE(health_pub, 0);
-// BT_MESH_MODEL_PUB_DEFINE(gen_onoff_pub_cli, NULL, 2 + 2);
-// Opcode(Sensor Status 0x52) + [[MPID 1, Raw Value 1], [MPID 2, Raw Value 2]]
-// https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Specifications/Mesh/Xml/Properties/org.bluetooth.property.present_ambient_temperature.xml
-// Opcode(Sensor Status 0x52) + [Present Ambient Temperature(0x004F < 0x0800)]
-// 1 octets + [MPID = 2 octets, Raw Value Format(sint8) = 1 octets]
-// 1 + (2 + 1)
-BT_MESH_MODEL_PUB_DEFINE(sensor_srv_pub, NULL, 1 + (2 + 1));
 
 struct bt_mesh_model root_models[] = {
 	BT_MESH_MODEL_CFG_SRV(&cfg_srv),
 	BT_MESH_MODEL_HEALTH_SRV(&health_srv, &health_pub),
-	BT_MESH_MODEL(BT_MESH_MODEL_ID_SENSOR_SRV, sensor_srv_op,
-		&sensor_srv_pub, &sensor_srv_state),
+	SENSOR_SRV_MODEL(elem0_sensor_srv),
 };
 
 struct bt_mesh_elem elements[] = {
@@ -123,7 +122,11 @@ int mesh_init()
 {
 	int err;
 
-	sensor_srv_init();
+	err = sensor_srv_init(ELEM_0_SENSOR_SRV_MODEL);
+	if (err < 0) {
+		printk("mesh_init(): sensor servel model of elment[0] init failed with err code: %d\n", err);
+		return err;
+	}
 
 	err = bt_enable(bt_ready);
 

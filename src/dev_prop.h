@@ -132,6 +132,10 @@ struct mesh_device_property {
 		.character = &_character_name                                 \
 	}
 
+
+int mesh_characteristic_value_size_get(struct mesh_characteristic *c);
+int mesh_device_property_value_size_get(struct mesh_device_property *p);
+
 // Mesh Device Property ID declares
 MESH_DEVICE_PROPERTY_ID_DECLARE(present_ambient_temperature);
 

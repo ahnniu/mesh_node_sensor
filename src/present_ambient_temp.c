@@ -3,14 +3,13 @@
 #include "sensor_srv.h"
 
 static void temp_on_new_sampling(struct minode_dht_device *dev);
-
-static struct sensor pat_sensor;
+static int pat_init(struct sensor *s);
 
 MESH_CHARACTER_FIELD_DEFINE(temperature_8, temperature_8, sint8);
 MESH_CHARACTER_1_DEFINE(temperature_8, temperature_8);
 MESH_DEVICE_PROPERTY_DEFINE(present_ambient_temperature, temperature_8);
 
-MINODE_DHT_DEVICE_DEFINE(temp_sensor_dev, A0, &pat_sensor, temp_on_new_sampling);
+MINODE_DHT_DEVICE_DEFINE(temp_sensor_dev, A0, &dht_sensor, temp_on_new_sampling);
 
 static struct sensor_prop pat_sensor_prop = {
 	.prop = &present_ambient_temperature,
@@ -19,10 +18,13 @@ static struct sensor_prop pat_sensor_prop = {
 static struct sensor_prop *channels[] = {
 	&pat_sensor_prop
 };
-static struct sensor pat_sensor = {
+struct sensor dht_sensor = {
+	.name = "DHT11",
 	.channel = channels,
 	.channels_count = ARRAY_SIZE(channels),
-	.dev = &temp_sensor_dev
+	.dev = &temp_sensor_dev,
+	.init = pat_init,
+	.deinit = NULL
 };
 
 static void temp_on_new_sampling(struct minode_dht_device *dev)
@@ -41,11 +43,21 @@ static void temp_on_new_sampling(struct minode_dht_device *dev)
       dev->connector, temp_data.val1);
 }
 
-int pat_register()
+static int pat_init(struct sensor *s)
 {
+	struct minode_dht_device *dev;
 	int err;
 
-	err = minode_dht_init(&temp_sensor_dev);
+	if (!s) {
+		return -EINVAL;
+	}
+
+	dev = s->dev;
+	if (!dev) {
+		return -ENODEV;
+	}
+
+	err = minode_dht_init(dev);
 	if (err < 0) {
 		return err;
 	}
@@ -59,5 +71,5 @@ int pat_register()
 	pat_sensor_prop.desc.update_interval = 107;			// 60s
 	pat_sensor_prop.desc.sampling_function = 1;			// Instantaneous
 
-	return sensor_srv_register(&pat_sensor);
+	return 0;
 }
