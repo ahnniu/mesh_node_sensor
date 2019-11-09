@@ -12,11 +12,12 @@
 
 #define ELEM_0_SENSOR_SRV_MODEL (&root_models[2])
 
-static struct sensor *sensors[] = {
-	&dht_sensor
-};
-
-SENOSR_SRV_MODEL_DATA_DEFINE(elem0_sensor_srv, sensors);
+SENOSR_SRV_MODEL_DATA_DEFINE_EX(
+	elem0_sensor_srv,
+	{
+		&dht_sensor
+	}
+);
 
 u16_t primary_addr = BT_MESH_ADDR_UNASSIGNED;
 

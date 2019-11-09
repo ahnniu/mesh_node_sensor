@@ -70,6 +70,13 @@ struct sensor_state {
 		_sensors);                                                      \
 	SENSOR_SRV_MODEL_PUB_DEFINE(_CONCAT(sensor_srv_pub_, _name))
 
+#define SENOSR_SRV_MODEL_DATA_DEFINE_EX(_name, sensors_in_braces)   \
+	static struct sensor *_CONCAT(sensors_, _name)[] =                \
+		sensors_in_braces;                                              \
+	SENOSR_SRV_MODEL_DATA_DEFINE(_name,                               \
+		_CONCAT(sensors_, _name)                                        \
+	)
+
 #define SENSOR_SRV_MODEL(_name)                                     \
 	BT_MESH_MODEL(                                                    \
 		BT_MESH_MODEL_ID_SENSOR_SRV,                                    \
