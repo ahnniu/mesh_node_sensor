@@ -160,8 +160,8 @@ static void sensor_get_response_1(struct bt_mesh_model *model,
 	sensor_srv_msg_free(msg);
 }
 
-static void sensor_get_response(struct bt_mesh_model *model,
-		       struct bt_mesh_msg_ctx *ctx)
+static void sensor_status_buf_prepare(struct bt_mesh_model *model,
+					struct net_buf_simple *msg)
 {
 	struct sensor_state *state = model->user_data;
 	struct sensor *sens;
@@ -172,13 +172,6 @@ static void sensor_get_response(struct bt_mesh_model *model,
 
 	u16_t prop_id;
 	u16_t raw_len;
-	struct net_buf_simple *msg;
-
-	msg = sensor_srv_status_msg_alloc(model);
-	if (!msg) {
-		printk("Alloc failed for 'Sensor Get' response message\n");
-		return;
-	}
 
 	bt_mesh_model_msg_init(msg, BT_MESH_MODEL_OP_SENS_STATUS);
 
@@ -194,6 +187,20 @@ static void sensor_get_response(struct bt_mesh_model *model,
 			sensor_status_buf_add_value(msg, prop);
 		}
 	}
+}
+
+static void sensor_get_response(struct bt_mesh_model *model,
+		       struct bt_mesh_msg_ctx *ctx)
+{
+	struct net_buf_simple *msg;
+
+	msg = sensor_srv_status_msg_alloc(model);
+	if (!msg) {
+		printk("Alloc failed for 'Sensor Get' response message\n");
+		return;
+	}
+
+	sensor_status_buf_prepare(model, msg);
 
 	if (bt_mesh_model_send(model, ctx, msg, NULL, NULL)) {
 		printk("Unable to send Sensor Get response\n");
@@ -262,6 +269,14 @@ const struct bt_mesh_model_op sensor_srv_op[] = {
 
 int sensor_srv_pub_msg_update(struct bt_mesh_model *model)
 {
+	struct net_buf_simple *msg = model->pub->msg;
+
+	if (!msg) {
+		return -ENODEV;
+	}
+
+	sensor_status_buf_prepare(model, msg);
+
 	return 0;
 }
 
