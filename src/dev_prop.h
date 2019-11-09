@@ -78,6 +78,8 @@ struct mesh_device_property {
 		.bits = MESH_FORMAT_BITS(_format)                                     \
 	}
 
+#define MESH_CHARACTER_FIELD(_name) _CONCAT(mc_field_, _name)
+
 #define MESH_CHARACTER_DEFINE(_name, _fields)                     \
 	static struct mesh_characteristic _name = {                     \
 		.id = &_CONCAT(mci_, _name),                                  \
@@ -94,6 +96,11 @@ struct mesh_device_property {
 
 #define _MESH_CHARACTER_FIELDS_NAME(_name) _CONCAT(mc_fields_, _name)
 #define _MESH_CHARACTER_FIELD(_field_name) &_CONCAT(mc_field_, _field_name)
+
+#define MESH_CHARACTER_DEFINE_EX(_name, _fields_array_in_braces)                    \
+	static struct mesh_characteristic_field *_MESH_CHARACTER_FIELDS_NAME(_name)[] =   \
+		_fields_array_in_braces;                                                        \
+	_MESH_CHARACTER_DEFINE(_name)
 
 #define MESH_CHARACTER_1_DEFINE(_name, _field0_name)                                \
 	static struct mesh_characteristic_field *_MESH_CHARACTER_FIELDS_NAME(_name)[] = { \
