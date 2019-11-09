@@ -108,13 +108,27 @@ static void sensor_desc_get(struct bt_mesh_model *model,
 	return sensor_desc_response(model, ctx);
 }
 
+static void sensor_status_buf_add_value(struct net_buf_simple *msg,
+					struct mesh_device_property *prop)
+{
+	int i;
+	struct mesh_characteristic_field *field;
+
+	if (!msg || !prop) {
+		return;
+	}
+
+	for (i = 0; i < prop->character->field_count; i++) {
+		field = prop->character->field[i];
+		net_buf_simple_add_mem(msg, field->value, field->size);
+	}
+}
+
 static void sensor_get_response_1(struct bt_mesh_model *model,
 		       struct bt_mesh_msg_ctx *ctx,
 					 u16_t prop_id,
 					 struct mesh_device_property *prop)
 {
-	struct mesh_characteristic_field *field;
-	int i;
 	u16_t size, raw_len;
 	struct net_buf_simple *msg;
 
@@ -136,10 +150,7 @@ static void sensor_get_response_1(struct bt_mesh_model *model,
 	SENSOR_SRV_STATUS_BUF_ADD_TLV(msg, prop_id, raw_len);
 
 	if (prop) {
-		for (i = 0; i < prop->character->field_count; i++) {
-			field = prop->character->field[i];
-			net_buf_simple_add_mem(msg, field->value, field->size);
-		}
+		sensor_status_buf_add_value(msg, prop);
 	}
 
 	if (bt_mesh_model_send(model, ctx, msg, NULL, NULL)) {
@@ -156,9 +167,8 @@ static void sensor_get_response(struct bt_mesh_model *model,
 	struct sensor *sens;
 	struct sensor_prop *channel;
 	struct mesh_device_property *prop;
-	struct mesh_characteristic_field *field;
 
-	int i, j, k;
+	int i, j;
 
 	u16_t prop_id;
 	u16_t raw_len;
@@ -181,11 +191,7 @@ static void sensor_get_response(struct bt_mesh_model *model,
 			raw_len = mesh_device_property_value_size_get(prop);
 
 			SENSOR_SRV_STATUS_BUF_ADD_TLV(msg, prop_id, raw_len);
-
-			for (k = 0; k <prop->character->field_count; k++) {
-				field = prop->character->field[k];
-				net_buf_simple_add_mem(msg, field->value, field->size);
-			}
+			sensor_status_buf_add_value(msg, prop);
 		}
 	}
 
